@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <title>Michael's Sextet</title>
+
+    <!-- Google Analytics (GA4). Replace BOTH G-22NMCDTRYV below with your Measurement ID
+         (Firebase console -> Project settings -> your Web app, or GA4 -> Admin -> Data streams). -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-22NMCDTRYV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-22NMCDTRYV');
+    </script>
+
+    <style>
+        :root { --bg: #ffffff; --text: #1a1a1b; --correct: #6aaa64; --present: #c9b458; --absent: #787c7e; --border: #d3d6da; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; margin: 0; padding: 10px; }
+        header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .home-btn, .stats-btn { background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; cursor: pointer; color: #555; }
+        #board { display: grid; grid-template-rows: repeat(6, 1fr); gap: 5px; margin-bottom: 20px; }
+        .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+        .tile { width: 52px; height: 52px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; text-transform: uppercase; border-radius: 4px; }
+        .tile[data-state="correct"] { background: var(--correct); border-color: var(--correct); color: white; }
+        .tile[data-state="present"] { background: var(--present); border-color: var(--present); color: white; }
+        .tile[data-state="absent"] { background: var(--absent); border-color: var(--absent); color: white; }
+        #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 350px; text-align: center; }
+        .stat-grid { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat-box { display: flex; flex-direction: column; } .stat-val { font-size: 1.5rem; font-weight: bold; }
+        .dist-bar { background: var(--absent); color: white; margin: 4px 0; text-align: right; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; min-width: 20px; }
+        .dist-bar.highlight { background: var(--correct); }
+        #keyboard { width: 100%; max-width: 450px; display: grid; gap: 6px; }
+        .key-row { display: flex; justify-content: center; gap: 4px; }
+        .key { background: #d3d6da; border: none; padding: 15px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1; text-transform: uppercase; }
+        .key.large { flex: 1.5; } .key[data-state="correct"] { background: var(--correct); color: white; }
+        .key[data-state="present"] { background: var(--present); color: white; } .key[data-state="absent"] { background: var(--absent); color: white; }
+        .msg { height: 30px; font-weight: bold; color: #e74c3c; margin-bottom: 10px; text-align: center; }
+        .btn-new { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 100; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div id="loader">Syncing...</div>
+<div id="modal-overlay" onclick="closeStats()">
+    <div class="modal" onclick="event.stopPropagation()">
+        <h3>STATISTICS</h3>
+        <div class="stat-grid">
+            <div class="stat-box"><span class="stat-val" id="s-played">0</span><span class="stat-label">Played</span></div>
+            <div class="stat-box"><span class="stat-val" id="s-winpc">0</span><span class="stat-label">Win %</span></div>
+            <div class="stat-box"><span class="stat-val" id="s-streak">0</span><span class="stat-label">Streak</span></div>
+            <div class="stat-box"><span class="stat-val" id="s-max">0</span><span class="stat-label">Max</span></div>
+        </div>
+        <h4>GUESS DISTRIBUTION</h4>
+        <div id="dist-container" style="text-align: left; padding: 0 20px;"></div>
+        <div id="countdown" style="margin-top:15px; font-size:0.9rem; color:#555; display:none;"></div>
+        <button id="share-btn" onclick="shareResult()" style="background:#6aaa64; color:white; border:none; padding:10px 20px; border-radius:6px; margin-top:15px; width:100%; display:none; font-weight:bold; font-size:1rem;">Share 📋</button>
+        <button onclick="closeStats()" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:6px; margin-top:10px; width:100%;">Close</button>
+    </div>
+</div>
+<header><button class="home-btn" onclick="location.href='index.html'">🏠 Home</button><h1 id="game-title" style="margin:0; font-size: 1.5rem;">SEXTET</h1><button class="stats-btn" onclick="showStats()">📊</button></header>
+<div id="msg" class="msg" role="status" aria-live="polite"></div>
+<div id="board"></div>
+<div id="keyboard"></div>
+<div style="display:flex; gap:10px; margin-top:20px; width: 100%; max-width: 400px;">
+    <button class="btn-new" onclick="confirmNewGame()">Practice</button>
+    <button class="btn-new" style="background:#787c7e;" onclick="giveUp()">Give Up</button>
+</div>
+<script>
+    let dictionary = [], answers = [], secretWord = "", guesses = [], currentGuess = "", gameOver = false;
+    let isPractice = false, currentPuzzleNumber = 0;
+    let stats = { played: 0, won: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0], lastPlayedDay: -1 };
+
+    // Small seeded PRNG (mulberry32) for a deterministic, shareable shuffle.
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    // Puzzle #1 = 12 June 2026 (Melbourne). Rolls over at Melbourne local midnight
+    // for every player, regardless of their own time zone. Cycles indefinitely.
+    function getPuzzleNumber() {
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+        const [y, m, d] = fmt.format(new Date()).split('-').map(Number);
+        const todayMel = Date.UTC(y, m - 1, d);
+        const EPOCH = Date.UTC(2026, 5, 12);
+        return Math.floor((todayMel - EPOCH) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    // Fire a GA4 event if analytics is loaded (no-op when the snippet is absent/blocked).
+    function track(name, params) {
+        if (typeof gtag === 'function') gtag('event', name, params || {});
+    }
+
+    let countdownTimer = null;
+    function msUntilNextMelbourneMidnight() {
+        const now = new Date();
+        const t = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Australia/Melbourne', hourCycle: 'h23',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).format(now).split(':').map(Number);
+        const secsToday = t[0] * 3600 + t[1] * 60 + t[2];
+        return (86400 - secsToday) * 1000 - now.getMilliseconds();
+    }
+
+    async function init() {
+        try {
+            const [answersRes, guessesRes] = await Promise.all([
+                fetch('sextet_answers.txt?v=2'),
+                fetch('sextet_words.txt?v=1')
+            ]);
+            const answersText = await answersRes.text();
+            const guessesText = await guessesRes.text();
+            answers = answersText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length === 6);
+            // The answer file is kept sorted A-Z for easy editing, so scramble the
+            // play order with a fixed seed: the daily sequence is identical for every
+            // player but is no longer guessable from the alphabetised file.
+            const rng = mulberry32(20260612);
+            for (let i = answers.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [answers[i], answers[j]] = [answers[j], answers[i]];
+            }
+            const validGuesses = guessesText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length === 6);
+            dictionary = [...new Set([...answers, ...validGuesses])];
+            document.getElementById('loader').style.display = 'none';
+
+            currentPuzzleNumber = getPuzzleNumber();
+
+            const savedStats = localStorage.getItem('michael_sextet_stats');
+            if (savedStats) stats = { ...stats, ...JSON.parse(savedStats) };
+
+            const saved = localStorage.getItem('michael_sextet_session');
+            if (saved) {
+                const s = JSON.parse(saved);
+                // Restore only if it's today's daily puzzle
+                if (!s.isPractice && s.puzzleNumber === currentPuzzleNumber) {
+                    secretWord = s.secretWord;
+                    guesses = s.guesses;
+                    gameOver = s.gameOver;
+                    isPractice = false;
+                    if (gameOver) {
+                        document.getElementById('msg').innerText =
+                            guesses[guesses.length - 1] === secretWord ? "Splendid!" : `Word was ${secretWord}`;
+                    }
+                } else {
+                    startDailyPuzzle();
+                }
+            } else {
+                startDailyPuzzle();
+            }
+            updateTitle();
+            renderBoard();
+            renderKeyboard();
+        } catch (error) {
+            console.error('Wordlists failed:', error);
+            document.getElementById('loader').innerHTML = 'Wordlists failed to load';
+        }
+    }
+
+    function startDailyPuzzle() {
+        isPractice = false;
+        secretWord = answers[(currentPuzzleNumber - 1) % answers.length];
+        guesses = []; currentGuess = ""; gameOver = false;
+        document.getElementById('msg').innerText = "";
+        saveAll();
+        track('game_start', { game: 'sextet', mode: 'daily', puzzle: currentPuzzleNumber });
+    }
+
+    function updateTitle() {
+        const el = document.getElementById('game-title');
+        el.innerText = isPractice ? 'SEXTET' : `SEXTET #${currentPuzzleNumber}`;
+    }
+
+    function saveAll() {
+        localStorage.setItem('michael_sextet_stats', JSON.stringify(stats));
+        // Persist only the daily session; practice games are ephemeral and must not
+        // clobber an in-progress daily (so reloading mid-practice keeps your daily).
+        if (!isPractice) {
+            localStorage.setItem('michael_sextet_session', JSON.stringify({ secretWord, guesses, gameOver, puzzleNumber: currentPuzzleNumber, isPractice }));
+        }
+    }
+
+    function endGame(isWin) {
+        gameOver = true;
+        if (!isPractice) {
+            stats.played++;
+            if (isWin) {
+                stats.won++;
+                // Streak only continues on consecutive days
+                if (stats.lastPlayedDay === currentPuzzleNumber - 1) {
+                    stats.streak++;
+                } else if (stats.lastPlayedDay !== currentPuzzleNumber) {
+                    stats.streak = 1;
+                }
+                if (stats.streak > stats.maxStreak) stats.maxStreak = stats.streak;
+                stats.dist[guesses.length - 1]++;
+                stats.lastPlayedDay = currentPuzzleNumber;
+                document.getElementById('msg').innerText = "Splendid!";
+            } else {
+                stats.streak = 0;
+                stats.lastPlayedDay = currentPuzzleNumber;
+                document.getElementById('msg').innerText = "Word was: " + secretWord;
+            }
+        } else {
+            document.getElementById('msg').innerText = isWin ? "Splendid! (practice)" : "Word was: " + secretWord;
+        }
+        track('game_complete', {
+            game: 'sextet', mode: isPractice ? 'practice' : 'daily',
+            result: isWin ? 'win' : 'loss', guesses: guesses.length, puzzle: currentPuzzleNumber
+        });
+        saveAll();
+        setTimeout(showStats, 1500);
+    }
+
+    function giveUp() {
+        if (gameOver) return;
+        if (confirm("Show solution? This counts as a loss.")) endGame(false);
+    }
+
+    function showStats() {
+        document.getElementById('s-played').innerText = stats.played;
+        document.getElementById('s-winpc').innerText = stats.played ? Math.round((stats.won / stats.played) * 100) : 0;
+        document.getElementById('s-streak').innerText = stats.streak;
+        document.getElementById('s-max').innerText = stats.maxStreak;
+        const distCont = document.getElementById('dist-container');
+        distCont.innerHTML = '';
+        const maxVal = Math.max(...stats.dist, 1);
+        stats.dist.forEach((val, i) => {
+            const row = document.createElement('div');
+            row.style.display = 'flex'; row.style.alignItems = 'center';
+            const bar = document.createElement('div');
+            bar.className = 'dist-bar' + (guesses.length === (i + 1) && gameOver && guesses[guesses.length - 1] === secretWord ? ' highlight' : '');
+            bar.style.width = Math.max(10, (val / maxVal) * 80) + '%';
+            bar.innerText = val;
+            const label = document.createElement('span');
+            label.innerText = (i + 1); label.style.width = '15px';
+            row.appendChild(label); row.appendChild(bar); distCont.appendChild(row);
+        });
+        // Show share button only for completed daily games
+        const shareBtn = document.getElementById('share-btn');
+        shareBtn.style.display = (gameOver && !isPractice) ? 'block' : 'none';
+        shareBtn.innerText = 'Share 📋';
+        startCountdown();
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    // Live "next puzzle in HH:MM:SS" counter (Melbourne midnight), only on a finished daily.
+    function startCountdown() {
+        const el = document.getElementById('countdown');
+        clearInterval(countdownTimer);
+        if (!(gameOver && !isPractice)) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        const pad = n => String(n).padStart(2, '0');
+        const tick = () => {
+            const ms = msUntilNextMelbourneMidnight();
+            if (ms <= 0) { el.innerText = 'New puzzle ready — refresh!'; clearInterval(countdownTimer); return; }
+            const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60;
+            el.innerText = `Next Sextet in ${pad(h)}:${pad(m)}:${pad(s)}`;
+        };
+        tick();
+        countdownTimer = setInterval(tick, 1000);
+    }
+
+    function closeStats() {
+        clearInterval(countdownTimer);
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    function shareResult() {
+        const isWin = guesses.length > 0 && guesses[guesses.length - 1] === secretWord;
+        const score = isWin ? `${guesses.length}/6` : 'X/6';
+        let text = `Michael's Sextet #${currentPuzzleNumber} ${score}\n\n`;
+        guesses.forEach(word => {
+            const states = getLetterStates(word);
+            text += states.map(s => s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛').join('') + '\n';
+        });
+        text = text.trim() + '\n\nhttps://games.goreythings.com/sextet.html';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('share-btn');
+                btn.innerText = 'Copied! ✓';
+                setTimeout(() => { btn.innerText = 'Share 📋'; }, 2000);
+            });
+        } else {
+            prompt('Copy your result:', text);
+        }
+    }
+
+    // Practice mode: random word, no effect on stats
+    function newGame() {
+        isPractice = true;
+        secretWord = answers[Math.floor(Math.random() * answers.length)];
+        guesses = []; currentGuess = ""; gameOver = false;
+        document.getElementById('msg').innerText = "";
+        updateTitle();
+        renderBoard(); renderKeyboard(); saveAll();
+        track('game_start', { game: 'sextet', mode: 'practice' });
+    }
+
+    function confirmNewGame() {
+        const msg = (!isPractice && !gameOver && guesses.length > 0)
+            ? "Abandon today's puzzle for a practice game?"
+            : "Start a new practice game?";
+        if (gameOver || guesses.length === 0 || confirm(msg)) newGame();
+    }
+
+    // Two-pass algorithm: exact matches first, then remaining present letters.
+    // Handles duplicate letters correctly (e.g. guessing REELER against BARREL).
+    function getLetterStates(word) {
+        const result = Array(6).fill('absent');
+        const secretArr = secretWord.split('');
+        const wordArr = word.split('');
+        for (let i = 0; i < 6; i++) {
+            if (wordArr[i] === secretArr[i]) {
+                result[i] = 'correct';
+                secretArr[i] = null;
+                wordArr[i] = null;
+            }
+        }
+        for (let i = 0; i < 6; i++) {
+            if (wordArr[i] === null) continue;
+            const j = secretArr.indexOf(wordArr[i]);
+            if (j !== -1) {
+                result[i] = 'present';
+                secretArr[j] = null;
+            }
+        }
+        return result;
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+            const word = guesses[i] || (i === guesses.length ? currentGuess : "");
+            const states = i < guesses.length ? getLetterStates(guesses[i]) : null;
+            for (let j = 0; j < 6; j++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerText = word[j] || "";
+                if (states) {
+                    tile.setAttribute('data-state', states[j]);
+                    tile.setAttribute('aria-label', `${word[j]}: ${states[j]}`);
+                } else if (word[j]) {
+                    tile.setAttribute('aria-label', word[j]);
+                } else {
+                    tile.setAttribute('aria-hidden', 'true');
+                }
+                rowDiv.appendChild(tile);
+            }
+            board.appendChild(rowDiv);
+        }
+    }
+
+    function renderKeyboard() {
+        const keys = [['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['ENTER','Z','X','C','V','B','N','M','⌫']];
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = '';
+        const letterStates = {};
+        guesses.forEach(word => {
+            const states = getLetterStates(word);
+            for (let i = 0; i < 6; i++) {
+                const char = word[i], state = states[i];
+                if (state === 'correct' || (state === 'present' && letterStates[char] !== 'correct') || !letterStates[char]) {
+                    letterStates[char] = state;
+                }
+            }
+        });
+        keys.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'key-row';
+            row.forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = 'key' + (key.length > 1 ? ' large' : '');
+                btn.innerText = key;
+                if (letterStates[key]) btn.setAttribute('data-state', letterStates[key]);
+                btn.onclick = () => handleInput(key);
+                rowDiv.appendChild(btn);
+            });
+            kb.appendChild(rowDiv);
+        });
+    }
+
+    function handleInput(key) {
+        if (gameOver) return;
+        const msg = document.getElementById('msg');
+        if (key === 'ENTER') {
+            if (currentGuess.length === 6 && dictionary.includes(currentGuess)) {
+                guesses.push(currentGuess);
+                if (currentGuess === secretWord) { endGame(true); }
+                else if (guesses.length === 6) { endGame(false); }
+                else { currentGuess = ""; saveAll(); }
+            } else msg.innerText = "Invalid word";
+        } else if (key === '⌫') {
+            currentGuess = currentGuess.slice(0, -1);
+            msg.innerText = "";
+        } else if (currentGuess.length < 6 && key.length === 1) {
+            currentGuess += key;
+            msg.innerText = "";
+        }
+        renderBoard();
+        renderKeyboard();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleInput('ENTER');
+        else if (e.key === 'Backspace') handleInput('⌫');
+        else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key.toUpperCase());
+    });
+
+    init();
+</script>
+</body>
+</html>

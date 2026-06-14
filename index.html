@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <title>Michael's Word Games</title>
+
+    <!-- Google Analytics (GA4). Replace BOTH G-22NMCDTRYV below with your Measurement ID
+         (Firebase console -> Project settings -> your Web app, or GA4 -> Admin -> Data streams). -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-22NMCDTRYV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-22NMCDTRYV');
+    </script>
+
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; /* Changed from center to push content up */
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 40px 0 20px; /* Increased top padding slightly for a clean look, reduced bottom */
+        }
+        
+        .header-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            border: 4px solid white;
+        }
+
+        h1 { color: #1a1a1b; margin-bottom: 30px; letter-spacing: 1px; font-weight: 800; text-align: center; }
+        
+        .menu { display: flex; flex-direction: column; gap: 20px; width: 90%; max-width: 400px; }
+        
+        .game-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            color: #1a1a1b; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            transition: transform 0.1s; 
+            border-left: 8px solid #2c3e50; 
+        }
+        
+        .game-card:active { transform: scale(0.97); }
+        .game-card.sextet { border-left-color: #6aaa64; }
+        
+        .game-info h2 { margin: 0; font-size: 1.4rem; }
+        .game-info p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
+        
+        .arrow { font-size: 1.5rem; color: #ccc; font-weight: bold; }
+
+        .footer-message {
+            margin-top: 30px;
+            padding: 0 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-width: 400px;
+        }
+
+        .footer-message a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="words.jpg" alt="Michael's Word Games Logo" class="header-image">
+
+    <h1>Michael's Word Games</h1>
+
+    <div class="menu">
+        <a href="target.html" class="game-card">
+            <div class="game-info">
+                <h2>Michael's Target</h2>
+                <p>Find the 9-letter word.</p>
+				<p>Make as many words as you can, 4 letters and more, no plurals, no proper nouns.</p>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a href="sextet.html" class="game-card sextet">
+            <div class="game-info">
+                <h2>Michael's Sextet</h2>
+                <p>6 letters. 6 tries. Solve the puzzle.</p>
+				<p>Based on Wordle, but harder!</p>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <div class="footer-message">
+            <p>These games are free to play. The dictionary is being refined. If you have any requests or comments, please email <a href="mailto:michael@goreythings.com">michael @ goreythings.com</a></p>
+            <p>&copy; Copyright Michael Gorey. All rights reserved</p>
+        </div>
+    </div>
+
+</body>
+</html>
