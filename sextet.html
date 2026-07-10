@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -19,30 +20,46 @@
     </script>
 
     <style>
-        :root { --bg: #ffffff; --text: #1a1a1b; --correct: #6aaa64; --present: #c9b458; --absent: #787c7e; --border: #d3d6da; }
+        :root { --bg: #ffffff; --text: #1a1a1b; --correct: #6aaa64; --present: #c9b458; --absent: #787c7e; --border: #d3d6da; --key-bg: #d3d6da; --key-text: #1a1a1b; --modal-bg: #ffffff; --muted: #555555; }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #121213; --text: #f8f8f8; --absent: #3a3a3c; --border: #3a3a3c; --key-bg: #818384; --key-text: #ffffff; --modal-bg: #1e1e1f; --muted: #aaaaaa; }
+        }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; margin: 0; padding: 10px; }
         header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .home-btn, .stats-btn { background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; cursor: pointer; color: #555; }
+        .home-btn, .stats-btn { background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; cursor: pointer; color: var(--muted); }
         #board { display: grid; grid-template-rows: repeat(6, 1fr); gap: 5px; margin-bottom: 20px; }
         .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
         .tile { width: 52px; height: 52px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; text-transform: uppercase; border-radius: 4px; }
         .tile[data-state="correct"] { background: var(--correct); border-color: var(--correct); color: white; }
         .tile[data-state="present"] { background: var(--present); border-color: var(--present); color: white; }
         .tile[data-state="absent"] { background: var(--absent); border-color: var(--absent); color: white; }
+        @keyframes pop { 50% { transform: scale(1.12); } }
+        .tile.pop { animation: pop 0.12s ease; }
+        /* Reveal flip: colour appears at the half-turn. --reveal is set per tile. */
+        @keyframes flip {
+            0%   { transform: rotateX(0);     background: var(--bg); border-color: var(--border); color: var(--text); }
+            45%  { transform: rotateX(90deg); background: var(--bg); border-color: var(--border); color: var(--text); }
+            55%  { transform: rotateX(90deg); background: var(--reveal); border-color: var(--reveal); color: white; }
+            100% { transform: rotateX(0);     background: var(--reveal); border-color: var(--reveal); color: white; }
+        }
+        .tile.reveal { animation: flip 0.55s ease backwards; }
+        @keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+        .row.shake { animation: shake 0.5s; }
+        @media (prefers-reduced-motion: reduce) { .tile, .row { animation: none !important; } }
         #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:1000; }
-        .modal { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 350px; text-align: center; }
+        .modal { background: var(--modal-bg); padding: 20px; border-radius: 10px; width: 90%; max-width: 350px; text-align: center; }
         .stat-grid { display: flex; justify-content: space-around; margin: 20px 0; }
         .stat-box { display: flex; flex-direction: column; } .stat-val { font-size: 1.5rem; font-weight: bold; }
         .dist-bar { background: var(--absent); color: white; margin: 4px 0; text-align: right; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; min-width: 20px; }
         .dist-bar.highlight { background: var(--correct); }
         #keyboard { width: 100%; max-width: 450px; display: grid; gap: 6px; }
         .key-row { display: flex; justify-content: center; gap: 4px; }
-        .key { background: #d3d6da; border: none; padding: 15px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1; text-transform: uppercase; }
+        .key { background: var(--key-bg); color: var(--key-text); border: none; padding: 15px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1; text-transform: uppercase; }
         .key.large { flex: 1.5; } .key[data-state="correct"] { background: var(--correct); color: white; }
         .key[data-state="present"] { background: var(--present); color: white; } .key[data-state="absent"] { background: var(--absent); color: white; }
         .msg { height: 30px; font-weight: bold; color: #e74c3c; margin-bottom: 10px; text-align: center; }
         .btn-new { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 100; font-weight: bold; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; z-index: 100; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -58,7 +75,7 @@
         </div>
         <h4>GUESS DISTRIBUTION</h4>
         <div id="dist-container" style="text-align: left; padding: 0 20px;"></div>
-        <div id="countdown" style="margin-top:15px; font-size:0.9rem; color:#555; display:none;"></div>
+        <div id="countdown" style="margin-top:15px; font-size:0.9rem; color:var(--muted); display:none;"></div>
         <button id="share-btn" onclick="shareResult()" style="background:#6aaa64; color:white; border:none; padding:10px 20px; border-radius:6px; margin-top:15px; width:100%; display:none; font-weight:bold; font-size:1rem;">Share 📋</button>
         <button onclick="closeStats()" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:6px; margin-top:10px; width:100%;">Close</button>
     </div>
@@ -72,8 +89,10 @@
     <button class="btn-new" style="background:#787c7e;" onclick="giveUp()">Give Up</button>
 </div>
 <script>
-    let dictionary = [], answers = [], secretWord = "", guesses = [], currentGuess = "", gameOver = false;
+    let dictionarySet = new Set(), answers = [], secretWord = "", guesses = [], currentGuess = "", gameOver = false;
     let isPractice = false, currentPuzzleNumber = 0;
+    // One-render animation flags, consumed by renderBoard.
+    let revealRow = -1, shakeRowIdx = -1, poppedTile = -1;
     let stats = { played: 0, won: 0, streak: 0, maxStreak: 0, dist: [0,0,0,0,0,0], lastPlayedDay: -1 };
 
     // Small seeded PRNG (mulberry32) for a deterministic, shareable shuffle.
@@ -132,7 +151,7 @@
                 [answers[i], answers[j]] = [answers[j], answers[i]];
             }
             const validGuesses = guessesText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length === 6);
-            dictionary = [...new Set([...answers, ...validGuesses])];
+            dictionarySet = new Set([...answers, ...validGuesses]);
             document.getElementById('loader').style.display = 'none';
 
             currentPuzzleNumber = getPuzzleNumber();
@@ -220,7 +239,8 @@
             result: isWin ? 'win' : 'loss', guesses: guesses.length, puzzle: currentPuzzleNumber
         });
         saveAll();
-        setTimeout(showStats, 1500);
+        // Give the reveal flip (~1.3s including stagger) time to finish first.
+        setTimeout(showStats, 2200);
     }
 
     function giveUp() {
@@ -354,8 +374,14 @@
                 if (states) {
                     tile.setAttribute('data-state', states[j]);
                     tile.setAttribute('aria-label', `${word[j]}: ${states[j]}`);
+                    if (i === revealRow) {
+                        tile.classList.add('reveal');
+                        tile.style.setProperty('--reveal', `var(--${states[j]})`);
+                        tile.style.animationDelay = (j * 0.15) + 's';
+                    }
                 } else if (word[j]) {
                     tile.setAttribute('aria-label', word[j]);
+                    if (i === guesses.length && j === poppedTile) tile.classList.add('pop');
                 } else {
                     tile.setAttribute('aria-hidden', 'true');
                 }
@@ -363,6 +389,8 @@
             }
             board.appendChild(rowDiv);
         }
+        if (shakeRowIdx >= 0 && board.children[shakeRowIdx]) board.children[shakeRowIdx].classList.add('shake');
+        revealRow = -1; shakeRowIdx = -1; poppedTile = -1;
     }
 
     function renderKeyboard() {
@@ -398,17 +426,25 @@
         if (gameOver) return;
         const msg = document.getElementById('msg');
         if (key === 'ENTER') {
-            if (currentGuess.length === 6 && dictionary.includes(currentGuess)) {
+            if (currentGuess.length < 6) {
+                msg.innerText = "Not enough letters";
+                shakeRowIdx = guesses.length;
+            } else if (!dictionarySet.has(currentGuess)) {
+                msg.innerText = "Not in word list";
+                shakeRowIdx = guesses.length;
+            } else {
                 guesses.push(currentGuess);
+                revealRow = guesses.length - 1;
                 if (currentGuess === secretWord) { endGame(true); }
                 else if (guesses.length === 6) { endGame(false); }
                 else { currentGuess = ""; saveAll(); }
-            } else msg.innerText = "Invalid word";
+            }
         } else if (key === '⌫') {
             currentGuess = currentGuess.slice(0, -1);
             msg.innerText = "";
         } else if (currentGuess.length < 6 && key.length === 1) {
             currentGuess += key;
+            poppedTile = currentGuess.length - 1;
             msg.innerText = "";
         }
         renderBoard();
@@ -419,6 +455,22 @@
         if (e.key === 'Enter') handleInput('ENTER');
         else if (e.key === 'Backspace') handleInput('⌫');
         else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key.toUpperCase());
+    });
+
+    // If the tab is reopened after Melbourne midnight, move to the new daily. A
+    // daily in progress is left alone (finishing it still records correctly);
+    // an untouched or finished board rolls straight over.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || isPractice || !answers.length) return;
+        const n = getPuzzleNumber();
+        if (n === currentPuzzleNumber) return;
+        if (gameOver || guesses.length === 0) {
+            currentPuzzleNumber = n;
+            startDailyPuzzle();
+            updateTitle(); renderBoard(); renderKeyboard();
+        } else {
+            document.getElementById('msg').innerText = "New daily available — refresh when ready";
+        }
     });
 
     init();

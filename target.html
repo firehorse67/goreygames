@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -19,16 +20,25 @@
     </script>
 
     <style>
-        :root { --primary: #2c3e50; --accent: #e74c3c; --success: #27ae60; --bg: #f4f7f6; --tile: #ffffff; --gold: #d4af37; --blue: #3498db; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; margin: 0; padding: 10px; color: var(--primary); }
-        
+        :root {
+            --primary: #2c3e50; --accent: #e74c3c; --success: #27ae60; --gold: #d4af37; --blue: #3498db;
+            --bg: #f4f7f6; --tile: #ffffff; --text: #2c3e50; --tile-border: #ccc;
+            --chip-bg: #eeeeee; --modal-bg: #ffffff; --line: #eeeeee; --muted: #888888;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #121213; --tile: #1e1e1f; --text: #e8e8e8; --tile-border: #3a3a3c;
+                --chip-bg: #26262a; --modal-bg: #1e1e1f; --line: #333333; --muted: #9a9a9a;
+            }
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; margin: 0; padding: 10px; color: var(--text); }
+
         /* Header & Modal */
         header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        /* .btn-icon styles are consolidated in a single rule below */
 
         #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:1000; }
-        .modal { background: white; padding: 25px; border-radius: 12px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        
+        .modal { background: var(--modal-bg); padding: 25px; border-radius: 12px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
         /* Rankings & Progress */
         .status-container { width: 100%; max-width: 400px; text-align: center; margin-bottom: 10px; }
         #rank-display { font-size: 1.6rem; font-weight: 900; margin: 5px 0; color: #bdc3c7; text-transform: uppercase; }
@@ -36,17 +46,18 @@
         .rank-good { color: #9b59b6 !important; }
         .rank-exc { color: var(--success) !important; }
 
-        .targets { display: flex; justify-content: center; gap: 8px; font-size: 0.8rem; background: #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
+        .targets { display: flex; justify-content: center; gap: 8px; font-size: 0.8rem; background: var(--chip-bg); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
         .targets b { color: var(--accent); }
 
         /* Game Grid */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .letter-tile { width: 75px; height: 75px; background: var(--tile); border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: bold; border-radius: 12px; text-transform: uppercase; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .letter-tile { width: 75px; height: 75px; background: var(--tile); border: 2px solid var(--tile-border); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: bold; border-radius: 12px; text-transform: uppercase; cursor: pointer; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: var(--text); }
         .letter-tile.center { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        #input-display { font-size: 1.8rem; height: 2.8rem; margin-bottom: 5px; border-bottom: 3px solid var(--primary); min-width: 240px; text-align: center; font-weight: bold; letter-spacing: 3px; display: flex; align-items: center; justify-content: center; }
+
+        #input-display { font-size: 1.8rem; height: 2.8rem; margin-bottom: 5px; border-bottom: 3px solid var(--text); min-width: 240px; text-align: center; font-weight: bold; letter-spacing: 3px; display: flex; align-items: center; justify-content: center; }
         .msg { color: var(--accent); height: 1.5rem; font-weight: bold; margin-bottom: 5px; font-size: 1rem; }
         .msg-target { color: var(--gold) !important; font-size: 1.2rem !important; }
+        .msg-bonus { color: var(--blue) !important; }
 
         /* Controls */
         .control-group { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
@@ -57,23 +68,16 @@
         .btn-clear { background: #7f8c8d; flex: 1; }
         .btn-missed { background: #9b59b6; flex: 1; font-size: 0.9rem; }
         .btn-new { background: var(--accent); font-size: 0.85rem; padding: 8px 16px; margin-top: 5px; }
-		
-		.btn-icon {
-  background: none;
-  border: 1px solid #2c3e50;  /* ← darker border too */
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #2c3e50;  /* ← dark text */
-}
-     
-        #found-list { width: 100%; max-width: 400px; column-count: 2; font-size: 0.95rem; border-top: 1px solid #ccc; padding-top: 15px; margin-top: 20px; line-height: 1.6; }
+
+        .btn-icon { background: none; border: 1px solid var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: var(--text); }
+
+        #found-list { width: 100%; max-width: 400px; column-count: 2; font-size: 0.95rem; border-top: 1px solid var(--tile-border); padding-top: 15px; margin-top: 20px; line-height: 1.6; }
         .pangram-text { color: var(--gold); font-weight: bold; }
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; }
-        
+        .bonus-text { color: var(--muted); font-style: italic; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; }
+
         /* Stats Styling */
-        .stat-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .stat-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); }
     </style>
 </head>
 <body>
@@ -94,7 +98,7 @@
 
 <header>
     <button class="btn-icon" onclick="location.href='index.html'">🏠 Home</button>
-    <h2 style="margin:0; font-size: 1.3rem;">TARGET</h2>
+    <h2 id="game-title" style="margin:0; font-size: 1.3rem;">TARGET</h2>
     <button class="btn-icon" onclick="showStats()">📊 Stats</button>
 </header>
 
@@ -119,18 +123,47 @@
         <button class="btn-clear" onclick="clearInput()">Clear</button>
         <button class="btn-missed" onclick="showMissed()">Missed</button>
     </div>
-    <div class="action-row" style="border-top: 1px solid #ddd; padding-top: 10px;">
-        <button class="btn-new" onclick="confirmNewGame()">New Game</button>
+    <div class="action-row" style="border-top: 1px solid var(--line); padding-top: 10px;">
+        <button class="btn-new" onclick="confirmNewGame()">Practice</button>
         <button class="btn-new" style="background:#3498db;" onclick="shuffleGrid()">Shuffle</button>
+        <button class="btn-new" id="share-btn" style="background:#27ae60; display:none;" onclick="shareResult()">Share 📋</button>
     </div>
 </div>
 
 <div id="found-list"></div>
 
 <script>
-    let dictionary = [], dictionarySet = new Set(), letters = [], center = "", currentInput = "", foundWords = [], allPossible = [], thresholds = {}, gameOver = false;
+    // Two-tier dictionaries: `dictionarySet` (the full ~69k list) decides whether a
+    // guess is ACCEPTED; `commonList` (frequency-filtered) decides what is SCORED —
+    // the word total, rank thresholds and the Missed list. Valid-but-obscure guesses
+    // count as bonus words so players are never told a real word is wrong.
+    let dictionarySet = new Set(), commonList = [];
+    let letters = [], center = "", currentInput = "", foundWords = [], allPossible = [], allPossibleSet = new Set(), thresholds = {}, gameOver = false;
     let targetPool = [];
+    let isPractice = false, currentPuzzleNumber = 0, playRecorded = false;
     let stats = { played: 0, average: 0, good: 0, excellent: 0, targets: 0 };
+
+    // Small seeded PRNG (mulberry32) for a deterministic, shareable shuffle.
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    // Puzzle #1 = 10 July 2026 (Melbourne). Rolls over at Melbourne local midnight
+    // for every player, regardless of their own time zone. Cycles indefinitely.
+    function getPuzzleNumber() {
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+        const [y, m, d] = fmt.format(new Date()).split('-').map(Number);
+        const todayMel = Date.UTC(y, m - 1, d);
+        const EPOCH = Date.UTC(2026, 6, 10);
+        return Math.floor((todayMel - EPOCH) / (1000 * 60 * 60 * 24)) + 1;
+    }
 
     // Fire a GA4 event if analytics is loaded (no-op when the snippet is absent/blocked).
     function track(name, params) {
@@ -139,67 +172,84 @@
 
     async function init() {
         try {
-            const response = await fetch('target_full.txt?v=1');
-            const text = await response.text();
-            dictionary = text.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 4);
-            dictionarySet = new Set(dictionary);
+            const [fullRes, commonRes, poolRes] = await Promise.all([
+                fetch('target_full.txt?v=1'),
+                fetch('target_common.txt?v=1'),
+                fetch('target_pool.txt?v=2')
+            ]);
+            const [fullText, commonText, poolText] = await Promise.all([
+                fullRes.text(), commonRes.text(), poolRes.text()
+            ]);
+            dictionarySet = new Set(fullText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 4));
+            commonList = commonText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(w => w.length >= 4);
+            // The pool file is sorted A-Z for easy editing, so scramble the daily
+            // order with a fixed seed: identical sequence for every player, but not
+            // guessable from the alphabetised file.
+            targetPool = poolText.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+                const [word, c] = l.split(/\s+/);
+                return { word, center: c };
+            });
+            const rng = mulberry32(20260710);
+            for (let i = targetPool.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [targetPool[i], targetPool[j]] = [targetPool[j], targetPool[i]];
+            }
             document.getElementById('loader').style.display = 'none';
+
+            currentPuzzleNumber = getPuzzleNumber();
 
             const savedStats = localStorage.getItem('michael_target_stats');
             if (savedStats) stats = { ...stats, ...JSON.parse(savedStats) };
 
+            let restored = false;
             const saved = localStorage.getItem('michael_target_session');
             if (saved) {
                 const s = JSON.parse(saved);
-                letters = s.letters; center = s.center; foundWords = s.foundWords; allPossible = s.allPossible;
-                renderGrid(); calculateScores(allPossible.length); updateUI();
-            } else { newGame(false); }
-        } catch (e) { document.getElementById('loader').innerText = "Load Error."; }
+                // Restore only today's daily puzzle (older saves, including the
+                // pre-daily format, are discarded).
+                if (!s.isPractice && s.puzzleNumber === currentPuzzleNumber && Array.isArray(s.letters)) {
+                    letters = s.letters; center = s.center; foundWords = s.foundWords || [];
+                    gameOver = !!s.gameOver; playRecorded = !!s.playRecorded; isPractice = false;
+                    buildPossible();
+                    renderGrid(); calculateScores(allPossible.length); updateUI(); updateTitle();
+                    if (gameOver) finishGame(false);
+                    restored = true;
+                }
+            }
+            if (!restored) startDailyPuzzle();
+        } catch (e) {
+            console.error('Wordlists failed:', e);
+            document.getElementById('loader').innerText = "Wordlists failed to load";
+        }
     }
 
-    // Precomputed pool: each line is "WORD CENTER" where CENTER is guaranteed to yield
-    // >= 40 findable words (the 9-letter solution is always among them). This lets a
-    // new game build its puzzle in a single dictionary pass with no retry loop.
-    async function loadPool() {
-        if (targetPool.length) return targetPool;
-        const res = await fetch('target_pool.txt?v=1');
-        const txt = await res.text();
-        targetPool = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
-            const [word, c] = l.split(/\s+/);
-            return { word, center: c };
-        });
-        return targetPool;
-    }
-
-    // All valid words for the current `letters` + `center`. Excludes plurals and
+    // All scored words for the current `letters` + `center`. Excludes plurals and
     // third-person singular verbs whose base form is itself a word.
     function buildPossible() {
-        allPossible = dictionary.filter(word => {
-            if (!word.includes(center)) return false;
-            let tl = [...letters];
-            for (let char of word) {
-                let idx = tl.indexOf(char);
-                if (idx === -1) return false;
-                tl.splice(idx, 1);
-            }
-            if (word.length < 4) return false;
-            if (word.endsWith('S') && !word.endsWith('SS')) {
-                const base = word.slice(0, -1);
-                if (dictionarySet.has(base) || dictionarySet.has(base + 'E')) return false;
-            }
-            return true;
-        });
+        allPossible = commonList.filter(word =>
+            word.includes(center) && fitsLetters(word) && !pluralExcluded(word)
+        );
+        allPossibleSet = new Set(allPossible);
     }
 
-    async function newGame(recordPlay = true) {
-        let pool;
-        try {
-            pool = await loadPool();
-        } catch (e) {
-            document.getElementById('msg').innerText = "Couldn't load the puzzle — check your connection.";
-            return;
+    // Can `word` be formed from the nine grid letters (respecting duplicates)?
+    function fitsLetters(word) {
+        const tl = [...letters];
+        for (const char of word) {
+            const idx = tl.indexOf(char);
+            if (idx === -1) return false;
+            tl.splice(idx, 1);
         }
-        const pick = pool[Math.floor(Math.random() * pool.length)];
+        return true;
+    }
+
+    function pluralExcluded(word) {
+        if (!word.endsWith('S') || word.endsWith('SS')) return false;
+        const base = word.slice(0, -1);
+        return dictionarySet.has(base) || dictionarySet.has(base + 'E');
+    }
+
+    function setupGame(pick) {
         center = pick.center;
         // Shuffle the nine letters (Fisher-Yates), then place the center at position 4.
         letters = pick.word.split('');
@@ -211,9 +261,35 @@
         [letters[ci], letters[4]] = [letters[4], letters[ci]];
 
         buildPossible();
-        foundWords = []; currentInput = ""; gameOver = false;
-        if (recordPlay) { stats.played++; saveStats(); track('game_start', { game: 'target' }); }
-        renderGrid(); calculateScores(allPossible.length); updateUI(); saveSession();
+        foundWords = []; currentInput = ""; gameOver = false; playRecorded = false;
+        document.getElementById('msg').innerText = "";
+        document.getElementById('msg').className = "msg";
+        document.getElementById('share-btn').style.display = 'none';
+        renderGrid(); calculateScores(allPossible.length); updateUI(); updateTitle(); saveSession();
+    }
+
+    function startDailyPuzzle() {
+        isPractice = false;
+        setupGame(targetPool[(currentPuzzleNumber - 1) % targetPool.length]);
+        track('game_start', { game: 'target', mode: 'daily', puzzle: currentPuzzleNumber });
+    }
+
+    // Practice mode: random puzzle, not persisted (so reloading returns to the daily).
+    function newPractice() {
+        isPractice = true;
+        setupGame(targetPool[Math.floor(Math.random() * targetPool.length)]);
+        track('game_start', { game: 'target', mode: 'practice' });
+    }
+
+    function confirmNewGame() {
+        const msg = (!isPractice && !gameOver && foundWords.length > 0)
+            ? "Abandon today's puzzle for a practice game?"
+            : "Start a new practice game?";
+        if (gameOver || foundWords.length === 0 || confirm(msg)) newPractice();
+    }
+
+    function updateTitle() {
+        document.getElementById('game-title').innerText = isPractice ? 'TARGET' : `TARGET #${currentPuzzleNumber}`;
     }
 
     function calculateScores(total) {
@@ -233,7 +309,7 @@
             div.innerText = l;
             div.setAttribute('role', 'button');
             div.setAttribute('aria-label', i === 4 ? `${l} (centre, required)` : l);
-            div.onclick = () => { if (gameOver) return; currentInput += l; updateUI(); };
+            div.onclick = () => { if (gameOver || currentInput.length >= 9) return; currentInput += l; updateUI(); };
             grid.appendChild(div);
         });
     }
@@ -246,6 +322,23 @@
         }
         letters = [...nonCenter.slice(0, 4), center, ...nonCenter.slice(4)];
         renderGrid();
+        saveSession();
+    }
+
+    function commonFoundCount() {
+        return foundWords.filter(w => allPossibleSet.has(w)).length;
+    }
+    function bonusFoundCount() {
+        return foundWords.length - commonFoundCount();
+    }
+
+    // Games Played counts once per game, on the first word found — so an
+    // abandoned board is never counted, and ranks can't exceed games played.
+    function recordPlay() {
+        if (playRecorded) return;
+        playRecorded = true;
+        stats.played++;
+        saveStats();
     }
 
     function submitWord() {
@@ -254,36 +347,98 @@
         const word = currentInput.toUpperCase();
         msg.className = "msg";
 
-        if (word.length < 4) msg.innerText = "Too short";
-        else if (!word.includes(center)) msg.innerText = "Missing " + center;
-        else if (foundWords.includes(word)) msg.innerText = "Found already";
-        else if (allPossible.includes(word)) {
+        if (word.length < 4) { msg.innerText = "Too short"; updateUI(); return; }
+        if (!word.includes(center)) { msg.innerText = "Missing " + center; updateUI(); return; }
+        if (foundWords.includes(word)) { msg.innerText = "Found already"; updateUI(); return; }
+
+        if (allPossibleSet.has(word)) {
             foundWords.push(word);
+            recordPlay();
             if (word.length === 9) {
                 msg.innerText = "TARGET FOUND!"; msg.className = "msg msg-target";
                 stats.targets++; saveStats();
-                track('target_found', { game: 'target', word });
+                track('target_found', { game: 'target', word, mode: isPractice ? 'practice' : 'daily' });
                 setTimeout(() => msg.innerText = "", 4000);
             } else {
                 msg.innerText = "Good!";
                 setTimeout(() => msg.innerText = "", 2000);
             }
-            if (foundWords.length === thresholds.avg) { stats.average++; saveStats(); }
-            else if (foundWords.length === thresholds.good) { stats.good++; saveStats(); }
-            else if (foundWords.length === thresholds.exc) { stats.excellent++; saveStats(); }
+            const cf = commonFoundCount();
+            if (cf === thresholds.avg) { stats.average++; saveStats(); }
+            else if (cf === thresholds.good) { stats.good++; saveStats(); }
+            else if (cf === thresholds.exc) { stats.excellent++; saveStats(); }
             currentInput = ""; saveSession();
-        } else msg.innerText = "Not in dictionary";
+        } else if (!fitsLetters(word)) {
+            msg.innerText = dictionarySet.has(word) ? "Letter used too many times" : "Not in dictionary";
+        } else if (pluralExcluded(word)) {
+            msg.innerText = "No plurals";
+        } else if (dictionarySet.has(word)) {
+            // Real word, fits the grid, but too obscure to be required: bonus.
+            foundWords.push(word);
+            recordPlay();
+            if (word.length === 9) {
+                msg.innerText = "TARGET FOUND!"; msg.className = "msg msg-target";
+                stats.targets++; saveStats();
+                track('target_found', { game: 'target', word, mode: isPractice ? 'practice' : 'daily' });
+                setTimeout(() => msg.innerText = "", 4000);
+            } else {
+                msg.innerText = "Bonus! Unusual word"; msg.className = "msg msg-bonus";
+                setTimeout(() => { msg.innerText = ""; msg.className = "msg"; }, 2500);
+            }
+            currentInput = ""; saveSession();
+        } else {
+            msg.innerText = "Not in dictionary";
+        }
         updateUI();
     }
 
     function showMissed() {
+        if (gameOver) return;
         if (confirm("Show all missed words and end game?")) {
             gameOver = true;
-            const missed = allPossible.filter(w => !foundWords.includes(w));
-            document.getElementById('found-list').innerHTML = `<strong style="color:var(--accent)">Missed:</strong> ` + missed.sort().join(', ');
-            document.getElementById('msg').innerText = "GAME OVER";
-            localStorage.removeItem('michael_target_session');
-            track('game_complete', { game: 'target', found: foundWords.length, total: allPossible.length });
+            saveSession();
+            finishGame(true);
+        }
+    }
+
+    function finishGame(trackIt) {
+        const missed = allPossible.filter(w => !foundWords.includes(w));
+        const bonus = foundWords.filter(w => !allPossibleSet.has(w));
+        let html = `<strong style="color:var(--accent)">Missed:</strong> ` + missed.sort().join(', ');
+        if (bonus.length) {
+            html += `<br><br><strong style="color:var(--blue)">Bonus words:</strong> <span class="bonus-text">` + bonus.sort().join(', ') + `</span>`;
+        }
+        document.getElementById('found-list').innerHTML = html;
+        document.getElementById('msg').innerText = "GAME OVER";
+        document.getElementById('msg').className = "msg";
+        if (!isPractice) document.getElementById('share-btn').style.display = 'block';
+        if (trackIt) {
+            track('game_complete', {
+                game: 'target', mode: isPractice ? 'practice' : 'daily',
+                found: commonFoundCount(), bonus: bonus.length, total: allPossible.length,
+                puzzle: isPractice ? undefined : currentPuzzleNumber
+            });
+        }
+    }
+
+    function shareResult() {
+        const cf = commonFoundCount(), bonus = bonusFoundCount();
+        let rankLabel = "";
+        if (cf >= thresholds.exc) rankLabel = " — Excellent!";
+        else if (cf >= thresholds.good) rankLabel = " — Good";
+        else if (cf >= thresholds.avg) rankLabel = " — Average";
+        let text = `Michael's Target #${currentPuzzleNumber}\n${cf}/${allPossible.length} words${rankLabel}`;
+        if (foundWords.some(w => w.length === 9)) text += `\n🎯 9-letter word found`;
+        if (bonus > 0) text += `\n+${bonus} bonus word${bonus > 1 ? 's' : ''}`;
+        text += `\n\nhttps://games.goreythings.com/target.html`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('share-btn');
+                btn.innerText = 'Copied! ✓';
+                setTimeout(() => { btn.innerText = 'Share 📋'; }, 2000);
+            });
+        } else {
+            prompt('Copy your result:', text);
         }
     }
 
@@ -297,27 +452,38 @@
     }
 
     function closeStats() { document.getElementById('modal-overlay').style.display = 'none'; }
-    function saveSession() { localStorage.setItem('michael_target_session', JSON.stringify({ letters, center, foundWords, allPossible })); }
+    // Persist only the daily session; practice games are ephemeral so reloading
+    // mid-practice returns to today's daily.
+    function saveSession() {
+        if (isPractice) return;
+        localStorage.setItem('michael_target_session', JSON.stringify({
+            letters, center, foundWords, gameOver, playRecorded,
+            puzzleNumber: currentPuzzleNumber, isPractice
+        }));
+    }
     function saveStats() { localStorage.setItem('michael_target_stats', JSON.stringify(stats)); }
     function clearInput() { currentInput = ""; updateUI(); }
-    function confirmNewGame() { if (confirm("Start a new game? Current progress will be lost.")) newGame(); }
 
     function updateUI() {
         document.getElementById('input-display').innerText = currentInput;
-        const listDisplay = document.getElementById('found-list');
-        listDisplay.innerHTML = '';
-        foundWords.sort().forEach(word => {
-            const span = document.createElement('span');
-            span.innerText = word + (word.length === 9 ? ' ★' : '') + ', ';
-            if (word.length === 9) span.className = 'pangram-text';
-            listDisplay.appendChild(span);
-        });
-        document.getElementById('progress').innerText = `Found: ${foundWords.length} / ${allPossible.length}`;
+        const cf = commonFoundCount(), bonus = bonusFoundCount();
+        if (!gameOver) {
+            const listDisplay = document.getElementById('found-list');
+            listDisplay.innerHTML = '';
+            foundWords.sort().forEach(word => {
+                const span = document.createElement('span');
+                span.innerText = word + (word.length === 9 ? ' ★' : '') + ', ';
+                if (word.length === 9) span.className = 'pangram-text';
+                else if (!allPossibleSet.has(word)) span.className = 'bonus-text';
+                listDisplay.appendChild(span);
+            });
+        }
+        document.getElementById('progress').innerText =
+            `Found: ${cf} / ${allPossible.length}` + (bonus > 0 ? ` (+${bonus} bonus)` : '');
         const rank = document.getElementById('rank-display');
-        const count = foundWords.length;
-        if (count >= thresholds.exc) { rank.innerText = "Excellent!"; rank.className = "rank-exc"; }
-        else if (count >= thresholds.good) { rank.innerText = "Good!"; rank.className = "rank-good"; }
-        else if (count >= thresholds.avg) { rank.innerText = "Average"; rank.className = "rank-avg"; }
+        if (cf >= thresholds.exc) { rank.innerText = "Excellent!"; rank.className = "rank-exc"; }
+        else if (cf >= thresholds.good) { rank.innerText = "Good!"; rank.className = "rank-good"; }
+        else if (cf >= thresholds.avg) { rank.innerText = "Average"; rank.className = "rank-avg"; }
         else { rank.innerText = "Keep going..."; rank.className = ""; }
     }
 
@@ -328,7 +494,23 @@
         else if (e.key === 'Delete') clearInput();
         else if (/^[a-zA-Z]$/.test(e.key)) {
             const letter = e.key.toUpperCase();
-            if (letters.includes(letter)) { currentInput += letter; updateUI(); }
+            if (letters.includes(letter) && currentInput.length < 9) { currentInput += letter; updateUI(); }
+        }
+    });
+
+    // If the tab is reopened after Melbourne midnight, offer the new daily. A
+    // daily in progress is left alone (finishing it still records correctly);
+    // an untouched or finished board rolls straight over.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || isPractice || !targetPool.length) return;
+        const n = getPuzzleNumber();
+        if (n === currentPuzzleNumber) return;
+        if (gameOver || foundWords.length === 0) {
+            currentPuzzleNumber = n;
+            document.getElementById('found-list').innerHTML = '';
+            startDailyPuzzle();
+        } else {
+            document.getElementById('msg').innerText = "New daily available — refresh when ready";
         }
     });
 

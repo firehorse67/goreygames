@@ -2,8 +2,9 @@
 <html lang="en-AU">
 <head>
     <meta charset="UTF-8">
-	<meta name="description" content="Word games developed by Michael Gorey from Ballarat, Australia, incuding Sextet which is like Wordle but six letters, six rows and harder.">
+	<meta name="description" content="Word games developed by Michael Gorey from Ballarat, Australia, including Sextet which is like Wordle but six letters, six rows and harder.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -83,6 +84,17 @@
             text-decoration: none;
             font-weight: 600;
         }
+
+        @media (prefers-color-scheme: dark) {
+            body { background: #121213; }
+            h1 { color: #f8f8f8; }
+            .game-card { background: #1e1e1f; color: #e8e8e8; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+            .game-info p { color: #9a9a9a; }
+            .arrow { color: #555; }
+            .footer-message { color: #9a9a9a; }
+            .footer-message a { color: #8ab4f8; }
+            .header-image { border-color: #1e1e1f; }
+        }
     </style>
 </head>
 <body>
@@ -96,7 +108,7 @@
             <div class="game-info">
                 <h2>Michael's Target</h2>
                 <p>Find the 9-letter word.</p>
-				<p>Make as many words as you can, 4 letters and more, no plurals, no proper nouns.</p>
+				<p>Make as many words as you can, 4 letters and more, no plurals, no proper nouns. New puzzle daily, plus unlimited practice.</p>
             </div>
             <div class="arrow">→</div>
         </a>
