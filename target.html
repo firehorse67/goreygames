@@ -293,7 +293,7 @@
     }
 
     function calculateScores(total) {
-        thresholds = { avg: Math.max(10, Math.ceil(total * 0.20)), good: Math.ceil(total * 0.40), exc: Math.ceil(total * 0.55) };
+        thresholds = { avg: Math.max(10, Math.ceil(total * 0.25)), good: Math.ceil(total * 0.45), exc: Math.ceil(total * 0.65) };
         document.getElementById('t-avg').innerText = thresholds.avg;
         document.getElementById('t-good').innerText = thresholds.good;
         document.getElementById('t-exc').innerText = thresholds.exc;
