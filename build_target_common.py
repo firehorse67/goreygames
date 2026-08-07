@@ -18,10 +18,12 @@ KEEP_FILE = Path("target_keep.txt")     # always scored, regardless of frequency
 OUT_FILE  = Path("target_common.txt")   # scoring dictionary for the game
 
 # Minimum zipf frequency for a word to count toward scoring.
-# 2.7 keeps ~17,500 of the ~69,000 full-dictionary words. Raise to 3.0 for a
-# stricter list (~13,500), lower to 2.5 for a more generous one (~20,500).
+# 2.4 keeps ~22,000 of the ~69,000 full-dictionary words. Raise to 2.7 for a
+# stricter list (~17,500), lower to 2.2 for a more generous one (~25,000).
+# Words below this still count as bonus, so lowering it mainly moves familiar
+# mid-frequency words (e.g. RIVET, OGLE, POACH, ABATE) from bonus into scoring.
 # After changing this, rebuild the puzzle pool too: python build_target_pool.py
-FREQ_THRESHOLD = 2.7
+FREQ_THRESHOLD = 2.4
 
 
 def load_word_set(path: Path) -> set[str]:
