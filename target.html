@@ -174,8 +174,8 @@
         try {
             const [fullRes, commonRes, poolRes] = await Promise.all([
                 fetch('target_full.txt?v=1'),
-                fetch('target_common.txt?v=1'),
-                fetch('target_pool.txt?v=2')
+                fetch('target_common.txt?v=2'),
+                fetch('target_pool.txt?v=3')
             ]);
             const [fullText, commonText, poolText] = await Promise.all([
                 fullRes.text(), commonRes.text(), poolRes.text()
