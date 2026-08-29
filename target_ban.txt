@@ -1,5 +1,7 @@
+agha
 alan
 anna
+ariel
 berlin
 boston
 cain
@@ -14,12 +16,16 @@ jordan
 kelly
 laura
 logan
+mair
 maya
 nancy
 nicol
+padi
 pedro
 ralph
+sade
 scot
 scotia
 tommy
 tonga
+tora
