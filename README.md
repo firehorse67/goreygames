@@ -23,7 +23,7 @@ Target uses a **two-tier dictionary**: guesses are accepted against the full ~69
 | `sextet_words.txt` | Full Sextet valid-guess dictionary |
 | `target_pool.txt` | **Precomputed** Target puzzles — each line is `WORD CENTER`, sorted A–Z (daily order is scrambled in-code) |
 | `target_full.txt` | Full Target accept dictionary (~69k words) |
-| `target_common.txt` | Target scoring dictionary (frequency-filtered, ~22k words) |
+| `target_common.txt` | Target scoring dictionary (frequency-filtered + inflection-boosted, ~25k words) |
 | `target_final.txt` | Source 9-letter word list used to generate `target_pool.txt` |
 | `build_sextet_answers.py` | Regenerates `sextet_answers.txt` from `sextet_words.txt` using word frequency |
 | `build_sextet_list.py` | Regenerates `sextet_words.txt` from a base word list |
